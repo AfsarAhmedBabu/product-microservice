@@ -69,7 +69,7 @@ class ProductApiGatewayRestController {
 	}
 
 	@HystrixCommand(fallbackMethod = "getProductsFallback")
-	@RequestMapping(method = RequestMethod.GET, value = "/names")
+	@RequestMapping(method = RequestMethod.GET, value = "/products")
 	public Collection<Product> getProducts() {
 
 		ParameterizedTypeReference<Resources<Product>> ptr = new ParameterizedTypeReference<Resources<Product>>() {
