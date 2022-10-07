@@ -1,6 +1,8 @@
 package com.microservice.productservice;
 
 import com.microservice.entity.Product;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -16,6 +18,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.integration.annotation.IntegrationComponentScan;
+import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,13 +33,7 @@ import java.util.stream.Stream;
 @SpringBootApplication
 public class ProductServiceApplication {
 
-	@RepositoryRestResource
-	interface ProductRepository extends JpaRepository<Product, Long> {
-
-		@RestResource(path = "by-name")
-		Collection<Product> findByProductName(@Param("productName") String productName);
-
-	}
+	private final Logger logger = LoggerFactory.getLogger(getClass());
 
 	@Component
 	class DummyDataCLR implements CommandLineRunner {
@@ -62,41 +59,53 @@ public class ProductServiceApplication {
 		}
 	}
 
-	@RefreshScope
-	@RestController
-	class MessageRestController {
-
-		private final String value;
-
-		@Autowired
-		public MessageRestController(@Value("${message}") String value) {
-			this.value = value;
-		}
-
-		@RequestMapping("/message")
-		String read() {
-			return this.value;
-		}
-
-	}
-
-	class ProductProcessor {
-
-		private ProductRepository productRepository;
-
-		public ProductProcessor(ProductRepository productRepository) {
-			this.productRepository = productRepository;
-		}
-
-		@ServiceActivator(inputChannel = Sink.INPUT)
-		public void acceptNewProduct(Product product) {
-			this.productRepository.save(product);
-		}
-
-	}
-
 	public static void main(String[] args) {
 		SpringApplication.run(ProductServiceApplication.class, args);
 	}
 
 }
+
+@RefreshScope
+@RestController
+class MessageRestController {
+
+	private final String value;
+
+	@Autowired
+	public MessageRestController(@Value("${message}") String value) {
+			this.value = value;
+		}
+
+	@RequestMapping("/message")
+	String read() {
+			return this.value;
+		}
+
+}
+
+
+@MessageEndpoint
+class ProductProcessor {
+
+	private ProductRepository productRepository;
+
+	public ProductProcessor(ProductRepository productRepository) {
+			this.productRepository = productRepository;
+		}
+
+	@ServiceActivator(inputChannel = Sink.INPUT)
+	public void acceptNewProduct(Product product) {
+			this.productRepository.save(product);
+		}
+
+}
+
+@RepositoryRestResource
+interface ProductRepository extends JpaRepository<Product, Long> {
+
+	@RestResource(path = "by-name")
+	Collection<Product> findByProductName(@Param("productName") String productName);
+
+}
+
+

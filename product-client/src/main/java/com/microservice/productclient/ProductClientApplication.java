@@ -55,7 +55,7 @@ class ProductApiGatewayRestController {
 	@Autowired
 	private RestTemplate restTemplate;
 
-	public Collection<String> getProductsFallback() {
+	public Collection<Product> getProductsFallback() {
 		return new ArrayList<>();
 	}
 
@@ -70,7 +70,7 @@ class ProductApiGatewayRestController {
 
 	@HystrixCommand(fallbackMethod = "getProductsFallback")
 	@RequestMapping(method = RequestMethod.GET, value = "/names")
-	public Collection<String> getProductNames() {
+	public Collection<Product> getProducts() {
 
 		ParameterizedTypeReference<Resources<Product>> ptr = new ParameterizedTypeReference<Resources<Product>>() {
 		};
