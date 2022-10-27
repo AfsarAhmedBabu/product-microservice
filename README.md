@@ -1,2 +1,3 @@
 # product-microservice
-# example of microservice architecture
+
+Example of microservice architecture
